@@ -27,10 +27,17 @@ namespace EmployeeManagementAPI.Controllers
             {
                 return BadRequest();
             }
-            var user = await dBContext.Registers.FirstOrDefaultAsync(x => x.UserName == register.UserName && x.Password == register.Password);
+
+            var user = await dBContext.Registers.FirstOrDefaultAsync(x => x.UserName == register.UserName);
             if(user == null)
             {
                 return NotFound(new {message = "Details Not Found"});
+            }
+
+            if (!HashingPassword.VerifyPassword(register.Password, user.Password))
+            {
+
+                return BadRequest(new { message = "Password Didn't Match" });
             }
             return Ok(new { message = "Login Success" });
         }
@@ -95,11 +102,11 @@ namespace EmployeeManagementAPI.Controllers
             {
                 sb.Append("Password length should be minimum 8 characters" + Environment.NewLine);
             }
-            if(!(Regex.IsMatch(password,"[a-z]") && !Regex.IsMatch(password,"[A-Z]") && !Regex.IsMatch(password,"[0-9]")))
+            if(!(Regex.IsMatch(password,"[a-z]") && Regex.IsMatch(password,"[A-Z]") && Regex.IsMatch(password,"[0-9]")))
             {
                 sb.Append("Password should be alphanumeric" + Environment.NewLine);
             }
-            if (!(Regex.IsMatch(password, "[<,>,@,#,$,%,*,^,:,;,{,},[,],+,=]")))
+            if (!(Regex.IsMatch(password, "[<,>,@,#,$,%,*,^,:,;,{,},+,=]")))
             {
                 sb.Append("Password should contain special characters" + Environment.NewLine);
             }
